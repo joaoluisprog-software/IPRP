@@ -13,7 +13,7 @@ LADO_MAIOR_AREA = ALTURA_JANELA / 3
 LADO_MENOR_AREA = 50
 RAIO_MEIO_CAMPO = LADO_MAIOR_AREA / 4
 START_POS_BALIZAS = ALTURA_JANELA / 4
-BOLA_START_POS = (5,5)
+BOLA_START_POS = (0,0)
 
 
 # Funções responsáveis pelo movimento dos jogadores no ambiente. 
@@ -86,6 +86,7 @@ def criar_bola():
     '''
     bola = t.Turtle()
     bola.shape('circle')
+    bola.shapesize(RAIO_BOLA/10)
     bola.color('black')
     bola.penup()
     bola.goto(BOLA_START_POS)
@@ -103,9 +104,6 @@ def criar_bola():
         'pos_anterior' : None
     }
 
-    pass
-
-
 def cria_jogador(x_pos_inicial, y_pos_inicial, cor):
     ''' Função responsável por criar e devolver o objeto que corresponde a um jogador (um objecto Turtle). 
     A função recebe 3 argumentos que correspondem às coordenadas da posição inicial 
@@ -113,7 +111,14 @@ def cria_jogador(x_pos_inicial, y_pos_inicial, cor):
     cujo seu tamanho deverá ser definido através da função shapesize
     do módulo \texttt{turtle}, usando os seguintes parâmetros: 
     stretch_wid=DEFAULT_TURTLE_SCALE, stretch_len=DEFAULT_TURTLE_SCALE. '''
-    pass
+    jogador = t.Turtle()
+    jogador.shape('circle')
+    jogador.shapesize(stretch_wid=DEFAULT_TURTLE_SCALE, stretch_len=DEFAULT_TURTLE_SIZE)
+    jogador.color(cor)
+    jogador.penup()
+    jogador.goto(x_pos_inicial, y_pos_inicial)
+    jogador.pendown()
+    return jogador
 
 
 def init_state():
