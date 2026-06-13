@@ -36,8 +36,43 @@ def jogador_esquerda(estado_jogo, jogador):
 def desenha_linhas_campo():
     ''' Função responsável por desenhar as linhas do campo, 
     nomeadamente a linha de meio campo, o círculo central, e as balizas. '''
-    pass
+    t.color('white')
+    t.pensize(10)
 
+    # Linha do meio campo
+    t.up()
+    t.goto(0, ALTURA_JANELA/2)
+    t.setheading(-90)
+    t.down()
+    t.forward(ALTURA_JANELA)
+
+    # Circulo central
+    t.up()
+    t.goto(-RAIO_MEIO_CAMPO*2, 0)
+    t.down()
+    t.circle(RAIO_MEIO_CAMPO*2)
+
+    # Baliza Player A 
+    t.up()
+    t.goto(-(LARGURA_JANELA/2), LADO_MAIOR_AREA/2)
+    t.setheading(0)
+    t.down()
+    t.forward(LADO_MENOR_AREA)
+    t.right(90)
+    t.forward(LADO_MAIOR_AREA)
+    t.right(90)
+    t.forward(LADO_MENOR_AREA)
+
+    # Baliza Player B
+    t.up()
+    t.goto(LARGURA_JANELA/2, LADO_MAIOR_AREA/2)
+    t.setheading(180)
+    t.down()
+    t.forward(LADO_MENOR_AREA)
+    t.left(90)
+    t.forward(LADO_MAIOR_AREA)
+    t.left(90)
+    t.forward(LADO_MENOR_AREA)
 
 def criar_bola():
     '''
