@@ -84,6 +84,25 @@ def criar_bola():
     a sua direção no eixo dos xx, a sua direção no eixo dos yy, 
     e um elemento inicialmente a None que corresponde à posição anterior da mesma.
     '''
+    bola = t.Turtle()
+    bola.shape('circle')
+    bola.color('black')
+    bola.penup()
+    bola.goto(BOLA_START_POS)
+    bola.pendown()
+
+    dir_x = random.choice([-1, 1])
+    dir_y = random.choice([-1, 1])
+
+    VELOCIDADE_BOLA = PIXEIS_MOVIMENTO*1.5
+
+    return {
+        'objeto' : bola,
+        'dir_x' : dir_x * VELOCIDADE_BOLA,
+        'dir_y' : dir_y * VELOCIDADE_BOLA,
+        'pos_anterior' : None
+    }
+
     pass
 
 
