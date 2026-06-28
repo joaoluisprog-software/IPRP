@@ -22,16 +22,29 @@ BOLA_START_POS = (0,0)
 # do jogo e o jogador que se está a movimentar. 
 
 def jogador_cima(estado_jogo, jogador):
-    pass
+    obj = estado_jogo[jogador]
+    novo_y = min((obj.ycor() + PIXEIS_MOVIMENTO), ALTURA_JANELA/2 - RAIO_JOGADOR)
+    # novo_y = obj.ycor() + PIXEIS_MOVIMENTO 
+    obj.goto(obj.xcor(), novo_y)
+    
 
 def jogador_baixo(estado_jogo, jogador):
-    pass
+    obj = estado_jogo[jogador]
+    novo_y = max((obj.ycor() - PIXEIS_MOVIMENTO), -ALTURA_JANELA/2 + RAIO_JOGADOR)
+    # novo_y = obj.ycor() - PIXEIS_MOVIMENTO 
+    obj.goto(obj.xcor(), novo_y)
     
 def jogador_direita(estado_jogo, jogador):
-    pass
+    obj = estado_jogo[jogador]
+    novo_x = min((obj.xcor() + PIXEIS_MOVIMENTO), LARGURA_JANELA/2 - RAIO_JOGADOR)
+    # novo_x = obj.xcor() + PIXEIS_MOVIMENTO 
+    obj.goto(novo_x, obj.ycor())
 
 def jogador_esquerda(estado_jogo, jogador):
-    pass
+    obj = estado_jogo[jogador]
+    novo_x = max((obj.xcor() - PIXEIS_MOVIMENTO), -LARGURA_JANELA/2 + RAIO_JOGADOR)
+    # novo_x = obj.xcor() - PIXEIS_MOVIMENTO 
+    obj.goto(novo_x, obj.ycor())
 
 def desenha_linhas_campo():
     ''' Função responsável por desenhar as linhas do campo, 
@@ -113,11 +126,11 @@ def cria_jogador(x_pos_inicial, y_pos_inicial, cor):
     stretch_wid=DEFAULT_TURTLE_SCALE, stretch_len=DEFAULT_TURTLE_SCALE. '''
     jogador = t.Turtle()
     jogador.shape('circle')
-    jogador.shapesize(stretch_wid=DEFAULT_TURTLE_SCALE, stretch_len=DEFAULT_TURTLE_SIZE)
+    jogador.shapesize(stretch_wid=DEFAULT_TURTLE_SCALE, stretch_len=DEFAULT_TURTLE_SCALE)
     jogador.color(cor)
     jogador.penup()
     jogador.goto(x_pos_inicial, y_pos_inicial)
-    jogador.pendown()
+    # jogador.pendown()
     return jogador
 
 
@@ -202,7 +215,12 @@ def movimenta_bola(estado_jogo):
     Função responsável pelo movimento da bola que deverá ser feito tendo em conta a
     posição atual da bola e a direção em xx e yy.
     '''
-    pass
+    obj_bola = estado_jogo['bola']
+    novo_x = obj_bola['objeto'].xcor() + obj_bola['dir_x']
+    novo_y = obj_bola['objeto'].ycor() + obj_bola['dir_y']
+    
+    obj_bola['objeto'].goto(novo_x, novo_y)
+   
 
 def verifica_colisoes_ambiente(estado_jogo):
     '''
