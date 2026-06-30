@@ -8,7 +8,17 @@ def le_replay(nome_ficheiro):
     jogador_vermelho - lista contendo tuplos com as coordenadas xx e yy da do jogador\_vermelho
     jogador_azul - lista contendo tuplos com as coordenadas xx e yy da do jogador\_azul
     '''
-    pass
+    def parse_linha(linha):
+        return [(float(x), float(y)) for x, y in (par.split(',') for par in linha.strip().split(';') if par)]
+
+    with open(nome_ficheiro, 'r') as f:
+        linhas = f.readlines()
+
+    return {
+        'bola': parse_linha(linhas[0]),
+        'jogador_vermelho': parse_linha(linhas[1]),
+        'jogador_azul': parse_linha(linhas[2])
+    }
         
 
 
@@ -20,7 +30,7 @@ def main():
         estado_jogo['janela'].update()
         estado_jogo['jogador_vermelho'].setpos(replay['jogador_vermelho'][i])
         estado_jogo['jogador_azul'].setpos(replay['jogador_azul'][i])
-        estado_jogo['bola']['objecto'].setpos(replay['bola'][i])
+        estado_jogo['bola']['objeto'].setpos(replay['bola'][i])
     estado_jogo['janela'].exitonclick()
 
 

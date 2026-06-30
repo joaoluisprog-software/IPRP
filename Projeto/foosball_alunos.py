@@ -14,6 +14,7 @@ LADO_MENOR_AREA = 50
 RAIO_MEIO_CAMPO = LADO_MAIOR_AREA / 4
 START_POS_BALIZAS = ALTURA_JANELA / 4
 BOLA_START_POS = (0,0)
+VELOCIDADE_BOLA = 2
 
 
 # Funções responsáveis pelo movimento dos jogadores no ambiente. 
@@ -103,12 +104,10 @@ def criar_bola():
     bola.color('black')
     bola.penup()
     bola.goto(BOLA_START_POS)
-    bola.pendown()
+    # bola.pendown()
 
     dir_x = random.choice([-1, 1])
     dir_y = random.choice([-1, 1])
-
-    VELOCIDADE_BOLA = PIXEIS_MOVIMENTO*1.5
 
     return {
         'objeto' : bola,
@@ -177,7 +176,21 @@ def terminar_jogo(estado_jogo):
      ele deverá ser criado com o seguinte cabeçalho: 
      NJogo,JogadorVermelho,JogadorAzul.
     '''
-    print("Adeus")
+    ficheiro = 'histórico_resultados.csv'
+
+    try:
+        with open(ficheiro, 'r') as f:
+            linhas = f.readlines()
+        jogos_existentes = [l for l in linhas[1:] if l.strip()]
+        n_jogo = len(jogos_existentes) + 1
+    except FileNotFoundError:
+        with open(ficheiro, 'w') as f:
+            f.write('NJogo,JogadorVermelho,JogadorAzul\n')
+        n_jogo = 1
+
+    with open(ficheiro, 'a') as f:
+        f.write(f'{n_jogo},{estado_jogo["pontuacao_jogador_vermelho"]},{estado_jogo["pontuacao_jogador_azul"]}\n')
+
     estado_jogo['janela'].bye()
 
 def setup(estado_jogo, jogar):
@@ -224,11 +237,35 @@ def movimenta_bola(estado_jogo):
 
 def verifica_colisoes_ambiente(estado_jogo):
     '''
-    Função responsável por verificar se há colisões com os limites do ambiente, 
-    atualizando a direção da bola. Não se esqueça de considerar que nas laterais, 
+    Função responsável por verificar se há colisões com os limites do ambiente,
+    atualizando a direção da bola. Não se esqueça de considerar que nas laterais,
     fora da zona das balizas, a bola deverá inverter a direção onde atingiu o limite.
     '''
-    pass
+    if estado_jogo['bola'] is None:
+        return
+
+    obj_bola = estado_jogo['bola']
+    bola = obj_bola['objeto']
+    x = bola.xcor()
+    y = bola.ycor()
+
+    # Paredes de cima e baixo
+    if y + RAIO_BOLA >= ALTURA_JANELA / 2:
+        obj_bola['dir_y'] *= -1
+        bola.goto(x, ALTURA_JANELA / 2 - RAIO_BOLA)
+    elif y - RAIO_BOLA <= -ALTURA_JANELA / 2:
+        obj_bola['dir_y'] *= -1
+        bola.goto(x, -ALTURA_JANELA / 2 + RAIO_BOLA)
+
+    # Parede esquerda (fora da zona da baliza)
+    if x - RAIO_BOLA <= -LARGURA_JANELA / 2 and abs(y) > LADO_MAIOR_AREA / 2:
+        obj_bola['dir_x'] *= -1
+        bola.goto(-LARGURA_JANELA / 2 + RAIO_BOLA, bola.ycor())
+
+    # Parede direita (fora da zona da baliza)
+    if x + RAIO_BOLA >= LARGURA_JANELA / 2 and abs(y) > LADO_MAIOR_AREA / 2:
+        obj_bola['dir_x'] *= -1
+        bola.goto(LARGURA_JANELA / 2 - RAIO_BOLA, bola.ycor())
 
 
 def verifica_golo_jogador_vermelho(estado_jogo):
@@ -254,10 +291,37 @@ def verifica_golo_jogador_vermelho(estado_jogo):
     Linha 2 - coordenadas do jogador vermelho;
     Linha 3 - coordenadas do jogador azul;
     
-    Em cada linha, os valores de xx e yy das coordenadas são separados por uma 
+    Em cada linha, os valores de xx e yy das coordenadas são separados por uma
     ',', e cada coordenada é separada por um ';'.
     '''
-    pass
+    if estado_jogo['bola'] is None:
+        return
+
+    obj_bola = estado_jogo['bola']
+    bola = obj_bola['objeto']
+    x = bola.xcor()
+    y = bola.ycor()
+
+    # Bola entrou na baliza direita (jogador vermelho marca golo)
+    if x + RAIO_BOLA >= LARGURA_JANELA / 2 - LADO_MENOR_AREA and abs(y) <= START_POS_BALIZAS:
+        estado_jogo['pontuacao_jogador_vermelho'] += 1
+
+        nome = (f'replay_golo_jv_{estado_jogo["pontuacao_jogador_vermelho"]}'
+                f'_ja_{estado_jogo["pontuacao_jogador_azul"]}.txt')
+        with open(nome, 'w') as f:
+            f.write(';'.join(f'{p[0]:.3f},{p[1]:.3f}' for p in estado_jogo['var']['bola']) + '\n')
+            f.write(';'.join(f'{p[0]:.3f},{p[1]:.3f}' for p in estado_jogo['var']['jogador_vermelho']) + '\n')
+            f.write(';'.join(f'{p[0]:.3f},{p[1]:.3f}' for p in estado_jogo['var']['jogador_azul']) + '\n')
+
+        estado_jogo['var']['bola'] = []
+        estado_jogo['var']['jogador_vermelho'] = []
+        estado_jogo['var']['jogador_azul'] = []
+
+        update_board(estado_jogo)
+
+        bola.goto(BOLA_START_POS)
+        obj_bola['dir_x'] = random.choice([-1, 1]) * VELOCIDADE_BOLA
+        obj_bola['dir_y'] = random.choice([-1, 1]) * VELOCIDADE_BOLA
 
 def verifica_golo_jogador_azul(estado_jogo):
     '''
@@ -285,7 +349,34 @@ def verifica_golo_jogador_azul(estado_jogo):
     Em cada linha, os valores de xx e yy das coordenadas são separados por uma 
     ',', e cada coordenada é separada por um ';'.
     '''
-    pass
+    if estado_jogo['bola'] is None:
+        return
+
+    obj_bola = estado_jogo['bola']
+    bola = obj_bola['objeto']
+    x = bola.xcor()
+    y = bola.ycor()
+
+    # Bola entrou na baliza esquerda (jogador azul marca golo)
+    if x - RAIO_BOLA <= -LARGURA_JANELA / 2 + LADO_MENOR_AREA and abs(y) <= START_POS_BALIZAS:
+        estado_jogo['pontuacao_jogador_azul'] += 1
+
+        nome = (f'replay_golo_jv_{estado_jogo["pontuacao_jogador_vermelho"]}'
+                f'_ja_{estado_jogo["pontuacao_jogador_azul"]}.txt')
+        with open(nome, 'w') as f:
+            f.write(';'.join(f'{p[0]:.3f},{p[1]:.3f}' for p in estado_jogo['var']['bola']) + '\n')
+            f.write(';'.join(f'{p[0]:.3f},{p[1]:.3f}' for p in estado_jogo['var']['jogador_vermelho']) + '\n')
+            f.write(';'.join(f'{p[0]:.3f},{p[1]:.3f}' for p in estado_jogo['var']['jogador_azul']) + '\n')
+
+        estado_jogo['var']['bola'] = []
+        estado_jogo['var']['jogador_azul'] = []
+        estado_jogo['var']['jogador_vermelho'] = []
+
+        update_board(estado_jogo)
+
+        bola.goto(BOLA_START_POS)
+        obj_bola['dir_x'] = random.choice([-1, 1]) * VELOCIDADE_BOLA
+        obj_bola['dir_y'] = random.choice([-1, 1]) * VELOCIDADE_BOLA
 
 
 def verifica_golos(estado_jogo):
@@ -295,21 +386,47 @@ def verifica_golos(estado_jogo):
 
 def verifica_toque_jogador_azul(estado_jogo):
     '''
-    Função responsável por verificar se o jogador tocou na bola. 
+    Função responsável por verificar se o jogador tocou na bola.
     Sempre que um jogador toca na bola, deverá mudar a direção desta.
     '''
-    pass
+    if estado_jogo['bola'] is None:
+        return
+
+    obj_bola = estado_jogo['bola']
+    bola = obj_bola['objeto']
+    jogador = estado_jogo['jogador_azul']
+
+    if bola.distance(jogador) < RAIO_BOLA + RAIO_JOGADOR:
+        dx = bola.xcor() - jogador.xcor()
+        dy = bola.ycor() - jogador.ycor()
+        if abs(dx) >= abs(dy):
+            obj_bola['dir_x'] *= -1
+        else:
+            obj_bola['dir_y'] *= -1
 
 
 def verifica_toque_jogador_vermelho(estado_jogo):
     '''
-    Função responsável por verificar se o jogador tocou na bola. 
+    Função responsável por verificar se o jogador tocou na bola.
     Sempre que um jogador toca na bola, deverá mudar a direção desta.
     '''
-    pass
+    if estado_jogo['bola'] is None:
+        return
+
+    obj_bola = estado_jogo['bola']
+    bola = obj_bola['objeto']
+    jogador = estado_jogo['jogador_vermelho']
+
+    if bola.distance(jogador) < RAIO_BOLA + RAIO_JOGADOR:
+        dx = bola.xcor() - jogador.xcor()
+        dy = bola.ycor() - jogador.ycor()
+        if abs(dx) >= abs(dy):
+            obj_bola['dir_x'] *= -1
+        else:
+            obj_bola['dir_y'] *= -1
 
 def guarda_posicoes_para_var(estado_jogo):
-    estado_jogo['var']['bola'].append(estado_jogo['bola']['objecto'].pos())
+    estado_jogo['var']['bola'].append(estado_jogo['bola']['objeto'].pos())
     estado_jogo['var']['jogador_vermelho'].append(estado_jogo['jogador_vermelho'].pos())
     estado_jogo['var']['jogador_azul'].append(estado_jogo['jogador_azul'].pos())
 
@@ -322,6 +439,7 @@ def main():
         if estado_jogo['bola'] is not None:
             movimenta_bola(estado_jogo)
         verifica_colisoes_ambiente(estado_jogo)
+        guarda_posicoes_para_var(estado_jogo)
         verifica_golos(estado_jogo)
         if estado_jogo['jogador_vermelho'] is not None:
             verifica_toque_jogador_azul(estado_jogo)
